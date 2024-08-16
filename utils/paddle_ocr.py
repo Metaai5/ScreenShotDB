@@ -3,6 +3,7 @@ from PIL import Image
 import re
 import string
 import json
+from pathlib import Path
 
 ocr = PaddleOCR(lang='korean')
  
@@ -20,7 +21,9 @@ def make_wordlist(img_path):
     return word_list
 
 def make_json(img_path):
+    img_name = Path(img_path).name
     ocr_result = ocr.ocr(img_path, cls=False)[0]
+    
     # 텍스트와 좌표를 추출하고 y 좌표로 정렬
     y_threshold = 10
     sorted_results = sorted([(item[1][0], item[0][0][0], item[0][0][1]) for item in ocr_result], key=lambda x: x[2])
@@ -50,7 +53,7 @@ def make_json(img_path):
     }
     
     # json파일 저장
-    with open('ocr_result_with_coordinates.json', 'w', encoding='utf-8') as f: 
+    with open(f'data/cordinate_json/{img_name}.json', 'w', encoding='utf-8') as f: 
         json.dump(output_data, f, ensure_ascii=False, indent=4)
 
 # def read_json(file_path):
@@ -59,5 +62,3 @@ def make_json(img_path):
 #     for line in output_data['lines']:
 #         line_text = ' '.join([item['text'] for item in line])
 #         texts.append(line_text)
-
-        
