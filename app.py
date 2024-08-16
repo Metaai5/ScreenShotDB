@@ -2,7 +2,7 @@ import gradio as gr
 import os
 from PIL import Image
 from services.search import search_query
-from utils.utils import save_image
+from utils.utils import load_image
 
 # 예제 요약 및 카테고리 데이터
 example_summary = "모카빵 반죽을 250그램씩 9개로 나누고, 중간 발효를 15분 진행합니다. 토핑은 100그램씩 분할하여, 반죽 위에 밀대로 펼쳐 덮습니다."
@@ -65,7 +65,7 @@ with gr.Blocks() as app:
             search_input = gr.Textbox(label="카테고리 검색", placeholder="카테고리 이름 입력...", scale=7)
             search_button = gr.Button("검색")
             image_input = gr.File(label="이미지 업로드", file_count="multiple", scale=1)
-            image_input.change(save_image, inputs=image_input)
+            image_input.change(load_image, inputs=image_input)
         search_input = gr.Textbox(label="태그 검색", placeholder="태그 입력")
         search_button = gr.Button("검색")
         
