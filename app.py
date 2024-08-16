@@ -1,8 +1,8 @@
 import gradio as gr
 import os
 from PIL import Image
-import uuid
-from pathlib import Path
+from services.search import search_query
+from utils.utils import save_image
 
 # 예제 요약 및 카테고리 데이터
 example_summary = "모카빵 반죽을 250그램씩 9개로 나누고, 중간 발효를 15분 진행합니다. 토핑은 100그램씩 분할하여, 반죽 위에 밀대로 펼쳐 덮습니다."
@@ -56,19 +56,7 @@ def update_image_and_summary(selected):
     
     return None, "이미지를 찾을 수 없습니다.", "", ""
 
-# 이미지 저장
-def save_image(image_paths):
-    for image_path in image_paths:
-        allowed_formats = ['.jpg', '.jpeg', '.png']
-        image_format = Path(image_path).suffix.lower()
-        if image_format in allowed_formats:
-            try:
-                file_path = os.path.join('data/organized_images/', f'{str(uuid.uuid4())}{image_format}')
-                image = Image.open(image_path)
-                image.save(file_path) 
-            except Exception as e:
-                return f'허용되지 않는 확장자입니다. 이미지 파일 .jpg, .jpeg, .png만 업로드 가능합니다.'
-            
+
 # Gradio 인터페이스 구성
 with gr.Blocks() as app:
     with gr.Column():
@@ -76,8 +64,8 @@ with gr.Blocks() as app:
         with gr.Row():
             search_input = gr.Textbox(label="카테고리 검색", placeholder="카테고리 이름 입력...", scale=7)
             search_button = gr.Button("검색")
-        image_input = gr.File(label="이미지 업로드", file_count="multiple", scale=1)
-        image_input.change(save_image, inputs=image_input)
+            image_input = gr.File(label="이미지 업로드", file_count="multiple", scale=1)
+            image_input.change(save_image, inputs=image_input)
         search_input = gr.Textbox(label="태그 검색", placeholder="태그 입력")
         search_button = gr.Button("검색")
         
