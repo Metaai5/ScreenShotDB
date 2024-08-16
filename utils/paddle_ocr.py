@@ -62,6 +62,3 @@ def make_json(img_path):
 #     for line in output_data['lines']:
 #         line_text = ' '.join([item['text'] for item in line])
 #         texts.append(line_text)
-
-# if __name__ =='__main__':
-    # make_json('data/organized_images/1b4fc434-0a57-4a99-935a-08a89b88598b.png')
