@@ -1,9 +1,9 @@
 import uuid
 from PIL import Image
 from pathlib import Path
-from utils.paddle_ocr import clean_text, make_wordlist, make_json
 import os
 from services.tag import tag_document
+from utils.paddle_ocr import clean_text, make_wordlist, make_json
 
 def save_image(image_path):
         allowed_formats = ['.jpg', '.jpeg', '.png']
@@ -25,4 +25,3 @@ def load_image(image_paths):
         document = ' '.join(wordlist)
         tag_document(document)
 
-        
