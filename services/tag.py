@@ -6,8 +6,9 @@ import json
 from pathlib import Path
 from collections import defaultdict
 import pandas as pd
+from config.path import TAG_FILE_PATH
 
-tag_file = Path("data/tags.json")
+tag_file = Path(TAG_FILE_PATH)
 
 def load_tags():
     if tag_file.exists():
@@ -55,7 +56,7 @@ def generate_new_tag(text):
     return new_tags
 
 def save_tags(tags):
-    with open('data/tags.json', 'w') as f:
+    with open(TAG_FILE_PATH, 'w') as f:
         json.dump(tags, f, indent=4)
             
 def tag_document(text):
