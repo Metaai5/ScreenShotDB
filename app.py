@@ -60,17 +60,6 @@ def search_images_by_category(search_query):
     return matched_images if matched_images else []
 
 # 선택된 이미지에 대한 요약 및 이미지 표시 함수
-# def update_image_and_summary(selected):
-#     if isinstance(selected, list) and len(selected) > 0:
-#         selected_image_path = selected[0][0]  # 튜플에서 경로만 추출
-            
-#         if selected_image_path and os.path.exists(selected_image_path):
-#             img, summary, categories, chatbot_message = display_images_and_summary(selected_image_path)
-#             return img, summary, categories, chatbot_message
-    
-#     return None, "이미지를 찾을 수 없습니다.", "", ""
-
-# 선택된 이미지에 대한 요약 및 이미지 표시 함수
 def update_image_and_summary(evt: gr.SelectData, images): # 그라디오 선택 이벤트 객체 어떤이미지선택했는지
     if evt.index < len(images): # 유효한지 확인
         selected_image = images[evt.index]
@@ -126,9 +115,6 @@ with gr.Blocks() as app:
 
     with gr.Row():
         tags_display
-
-    # search_button.click(fn=handle_search, inputs=search_input, outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
-
     
     search_results.select(fn=update_image_and_summary, inputs=[search_results], outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
     
