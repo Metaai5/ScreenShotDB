@@ -18,20 +18,26 @@ previous_results = []
 def display_images_and_summary(image_path):
     try:
         if isinstance(image_path, tuple):
-            # 튜플의 첫 번째 요소가 이미지 경로입니다
             img_path = image_path[0]
-            img = Image.open(img_path)
         elif isinstance(image_path, str):
-            img = Image.open(image_path)
+            img_path = image_path,
         elif isinstance(image_path, Image.Image):
             img = image_path
+        
+        if not isinstance(image_path, Image.Image):
+            img = Image.open(img_path)
+        
+        # Convert image to RGB (24-bit) if it's RGBA (32-bit)
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+        
         summary = process_image(img)
         categories = ", ".join(example_categories)
         chatbot_message = Chatbot
         return img, summary, categories, chatbot_message
-    except Exception:
-        return None, "이미지를 찾을 수 없습니다.", "", ""
-
+    except Exception as e:
+        return None, f"이미지를 처리할 수 없습니다.", "", ""
+    
 # 카테고리별 이미지 검색 함수
 def search_images_by_category(search_query):
     base_dir = './organized_images'
