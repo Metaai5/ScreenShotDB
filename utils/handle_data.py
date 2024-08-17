@@ -16,7 +16,6 @@ def save_image(image_path, save_path):
     image.save(save_path)
     return save_path
 
-
 #text, file_path, uuid, tag, df 생성 
 def make_dataframe(document_data):
     result_texts = {}
@@ -34,7 +33,8 @@ def make_dataframe(document_data):
         df.to_csv(STORAGE_FILE_PATH, index=False)
     else:
         df.to_csv(STORAGE_FILE_PATH, mode='a', header=False, index=False)
-            
+
+       
 # Gradio - pipe 역할
 def load_image(image_paths):
     for image_path in image_paths:
@@ -53,3 +53,16 @@ def load_image(image_paths):
             except Exception as e:
                 return f'이미지 파일 .jpg, .jpeg, .png만 업로드 가능합니다.'
         
+
+
+
+def save_image_2(image_path):
+    allowed_formats = {'.jpg', '.jpeg', '.png'}
+    image_format = Path(image_path).suffix.lower()
+    uuid_str = str(uuid.uuid4()) 
+    save_path = os.path.join(ORGANIZED_IMAGE_DIR, f'{uuid_str}{image_format}')
+    if image_format in allowed_formats:
+        image = Image.open(image_path)
+        image.save(save_path)
+        return uuid_str, save_path
+    return None, None

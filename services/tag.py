@@ -19,8 +19,7 @@ def load_tags():
 
 tags = load_tags()
 tags_str = ','.join(tags)
-
-
+print(tags_str)
 
 def make_models():
     topic_classification_prompt = '''

@@ -9,6 +9,8 @@ DATA_DIR = os.path.join(ROOT_DIR, 'data')
 
 # ./data/image
 IMAGE_DIR = os.path.join(DATA_DIR, 'image')
+# ./data/image/raw
+RAW_IMAGE_DIR = os.path.join(IMAGE_DIR, 'raw')
 # ./data/image/organized
 ORGANIZED_IMAGE_DIR = os.path.join(IMAGE_DIR, 'organized')
 
