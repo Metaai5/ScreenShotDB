@@ -39,9 +39,7 @@ def make_dataframe(document_data):
     if not os.path.exists(storage_data_file_path):
         df.to_csv(storage_data_file_path, index=False)
     else:
-        base_df = pd.read_csv(storage_data_file_path)
-        base_df = pd.concat([base_df, df], ignore_index=True)
-        base_df.to_csv(storage_data_file_path, index=False)
+        df.to_csv(storage_data_file_path, mode='a', header=False, index=False)
             
 # Gradio - pipe 역할
 def load_image(image_paths):
