@@ -20,7 +20,7 @@ summary_user_prompt_template = PromptTemplate.from_template('''
                                                                 다음은 요약할 텍스트입니다:
                                                                 {text}                                         
                                                                 ''')
-summary_model = LLMModel(gpt_chat_model, tokenizer, device, summary_prompt, summary_user_prompt_template)
+summary_model = LLMModel(gpt_chat_model, None, device, summary_prompt, summary_user_prompt_template)
 
 def make_summary(text):
     summary = summary_model.exec(text)

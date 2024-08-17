@@ -1,6 +1,5 @@
 from langchain.chat_models import ChatOpenAI, ChatOllama
 from langchain.schema import HumanMessage, SystemMessage
-from transformers import AutoTokenizer
 from sentence_transformers import SentenceTransformer
 import torch
 from dotenv import load_dotenv
@@ -9,7 +8,6 @@ load_dotenv()
 
 llama_chat_model = ChatOllama(model="llama3.1:latest", temperature=0.1)
 gpt_chat_model = ChatOpenAI(model='gpt-4o-mini')
-tokenizer = AutoTokenizer.from_pretrained('MLP-KTLim/llama-3-Korean-Bllossom-8B')
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 embedding_model = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
 
