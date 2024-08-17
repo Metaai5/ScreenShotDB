@@ -1,5 +1,7 @@
 from langchain.prompts import PromptTemplate
-from services.model import LLMModel,gpt_chat_model, device
+from models.llm_models import LLMModel
+from dependencies.model_factory import gpt_chat_model, device
+
 
 summary_prompt = '''
                         당신은 도움이 되는 텍스트분석전문가입니다.

@@ -4,9 +4,10 @@ from pathlib import Path
 import os
 from services.tag import tag_document 
 from services.summary import make_summary
-from utils.paddle_ocr import make_wordlist
+from dependencies.model_factory import ocr_model
 import pandas as pd
 from config.path import ORGANIZED_IMAGE_DIR, STORAGE_FILE_PATH
+
 
 # 이미지 저장
 def save_image(image_path, save_path):
@@ -14,6 +15,7 @@ def save_image(image_path, save_path):
     image = Image.open(image_path)
     image.save(save_path)
     return save_path
+
 
 #text, file_path, uuid, tag, df 생성 
 def make_dataframe(document_data):
@@ -43,7 +45,7 @@ def load_image(image_paths):
         if image_format in allowed_formats:
             try:
                 file_path = save_image(image_path, save_path)
-                text = ' '.join(make_wordlist(file_path))
+                text = ' '.join(ocr_model.make_wordlist(file_path))
                 tags = tag_document(text)
                 summary = make_summary(text)
                 document_data = {'uuid_str':uuid_str, 'text':text, 'file_path': image_path, 'tags':tags, 'summary' : summary}

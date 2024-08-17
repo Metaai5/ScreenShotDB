@@ -1,6 +1,7 @@
 from langchain.prompts import PromptTemplate
 from sentence_transformers import util
-from services.model import LLMModel, gpt_chat_model, device, embedding_model
+from models.llm_models import LLMModel
+from dependencies.model_factory import gpt_chat_model, device, embedding_model
 import torch
 import json
 from pathlib import Path

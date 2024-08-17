@@ -1,15 +1,5 @@
-from langchain.chat_models import ChatOpenAI, ChatOllama
 from langchain.schema import HumanMessage, SystemMessage
-from sentence_transformers import SentenceTransformer
-import torch
-from dotenv import load_dotenv
 
-load_dotenv()
-
-llama_chat_model = ChatOllama(model="llama3.1:latest", temperature=0.1)
-gpt_chat_model = ChatOpenAI(model='gpt-4o-mini')
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-embedding_model = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
 
 class LLMModel():
     def __init__(self, model, tokenizer, device, prompt, user_prompt_template):
@@ -19,12 +9,18 @@ class LLMModel():
         self.tokenizer = tokenizer
         self.device = device
 
+    def strip_noise_from_text(model, text):
+        llm_response = model.invoke(text + ' 이 내용에서, 의미가 없는 문자열을 제거한 뒤, 온전히 그 내용만 돌려줘')
+        return llm_response.content
+    
+    
     def exec(self, text):
         llm_prompt_result = self.user_prompt_template.format(text=text)
         messages = [SystemMessage(content=self.prompt) ,
                     HumanMessage(content=llm_prompt_result)]
 
         return self.model(messages).content
+
 
 class CustomModel(LLMModel):
     def __init__(self, model, tokenizer, device, prompt, user_prompt_template):
