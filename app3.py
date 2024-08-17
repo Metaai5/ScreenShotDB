@@ -108,7 +108,10 @@ def update_image_and_summary(evt: gr.SelectData):
 
     return None, "이미지를 찾을 수 없습니다.", "", ""
 
-with gr.Blocks() as app:
+# 그라디오 인터페이스 생성(테마 적용 및 제목사이즈 수정)
+with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; font-size: 2em !important; margin-top: 5px !important; margin-bottom: 5px !important; font-weight: bold !important; }") as app:
+    with gr.Column():
+        gr.HTML('<h1 class="title-style">AI 이미지 검색 · 요약 서비스</h1>')
     with gr.Tab('태그별 검색'):
         with gr.Row():
             folder_list = gr.Radio(choices=fetch_representative_images(), label="태그별 폴더 목록")
