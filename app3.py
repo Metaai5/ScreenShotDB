@@ -120,6 +120,9 @@ def update_image_and_summary(evt: gr.SelectData):
 
     return None, "이미지를 찾을 수 없습니다.", "", ""
 
+def clear_outputs():
+    return None, None, None, None, None, None, None, None, None, None, None, None, None
+
 
 # 그라디오 인터페이스 생성(테마 적용 및 제목사이즈 수정)
 with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; font-size: 2em !important; margin-top: 5px !important; margin-bottom: 5px !important; font-weight: bold !important; }") as app:
@@ -141,12 +144,7 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
                     tags_display = gr.Textbox(label="태그", interactive=False)
                     selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
                     chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
-            
-            folder_list.change(
-                fn=update_selected_image,
-                inputs=folder_list,
-                outputs=infolder_images
-            )
+
             def display_selected_infolder_image(evt: gr.SelectData, images):
                 selected_image_path = evt.value["image"]["path"]
                 if selected_image_path and os.path.exists(selected_image_path):
@@ -195,4 +193,14 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
 
         image_input.change(fn=upload, inputs=[image_input], outputs=[image_output, folder_list])
 
+        folder_list.change(
+            fn=clear_outputs,
+            outputs=[image_input, image_output,
+            infolder_images, selected_image_display, tags_display, selected_summary_display, chatbot_display, 
+            search_input, s_tab_search_results, s_tab_selected_image_display, s_tab_tags_display, s_tab_selected_summary_display, s_tab_chatbot_display]
+        ).then(
+            fn=update_selected_image,
+            inputs=folder_list,
+            outputs=infolder_images
+        )
 app.launch(share=True)
