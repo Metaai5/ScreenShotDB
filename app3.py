@@ -15,8 +15,6 @@ from config.path import RAW_IMAGE_DIR
 import ast
 import time
 
-
-
 # 예제 요약 및 태그 데이터
 Chatbot = "OOO하는 방식도 추천드립니다."
 
@@ -36,10 +34,10 @@ def upload(image_paths, progress=gr.Progress()):
     try:
         for i, cur_file_path in enumerate(progress.tqdm(image_paths)):
             time.sleep(0.25)
-            
+            uuid_str, file_path = save_image_2(cur_file_path)
             # 스테이터스바 제거
             progress(i / len(image_paths) / total_steps, desc=f"Processing {cur_file_path} - Removing status bar")
-            processed_image = remove_status_bar(cur_file_path)
+            processed_image = remove_status_bar(file_path)
 
             # ocr
             progress((i / len(image_paths)) + 1 / total_steps, desc=f"Processing {cur_file_path} - OCR")
@@ -60,7 +58,7 @@ def upload(image_paths, progress=gr.Progress()):
                 categories = tag
             
             print(tag)
-            uuid_str, file_path = save_image_2(cur_file_path)
+            
             document_data = {'uuid_str':uuid_str, 'text':ocr_text, 'file_path': file_path, 'tags':categories, 'summary' : summary}
             make_dataframe(document_data)
             
@@ -166,23 +164,25 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
             with gr.Row():
                 search_input = gr.Textbox(label="검색", placeholder="검색할 키워드 및 내용을 입력하세요", scale=10, min_width=600)
                 search_button = gr.Button("검색", scale=2, min_width=200)
-                gallery_info = gr.Markdown(value="")
 
-                def handle_search(search_query):
-                    global previous_results
-                    results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
-                    if results == previous_results:
-                        return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
-                    
-                    previous_results = results
-                    if results:
-                        return results, "▶검색된 이미지 표시", None, "", "", ""
-                    else:
-                        return [], "▶검색 결과가 없습니다. 다른 키워드로 검색해주세요.", None, "이미지를 찾을 수 없습니다.", "검색된 결과가 없습니다", ""
-            
+            def handle_search(search_query):
+                global previous_results
+                keyword_results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
+                distance_results = [search_result['file_path'] for search_result in search_with_distance(search_query)]
+                results = list(set(keyword_results + distance_results))
+                if results == previous_results:
+                    return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
+                
+                previous_results = results
+                if results:
+                    return results, "▶검색된 이미지 표시", None, "", "", ""
+                else:
+                    return [], "▶검색 결과가 없습니다. 다른 키워드로 검색해주세요.", None, "이미지를 찾을 수 없습니다.", "검색된 결과가 없습니다", ""
+        
+            with gr.Row():
+                gallery_info = gr.Markdown(value="")
             with gr.Row():
                 search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
-
             with gr.Row():
                 with gr.Column(scale=1):
                     selected_image_display = gr.Image(label="이미지", width=480, height=650)
@@ -191,9 +191,9 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
                     selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
                     chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
 
-            search_button.click(fn=handle_search, inputs=search_input, outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
-            search_results.select(fn=update_image_and_summary, outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
+                search_button.click(fn=handle_search, inputs=search_input, outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
+                search_results.select(fn=update_image_and_summary, outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
 
-    image_input.change(fn=upload, inputs=[image_input], outputs=[image_output, folder_list])
+        image_input.change(fn=upload, inputs=[image_input], outputs=[image_output, folder_list])
 
 app.launch(share=True)

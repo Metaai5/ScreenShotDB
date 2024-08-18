@@ -4,6 +4,8 @@ from dependencies.model_factory import embedding_model
 from config.path import STORAGE_FILE_PATH
 
 def search_with_just_keyword(keyword):
+    if not keyword:
+        return []
     # 전체 로드
     df = pd.read_csv(STORAGE_FILE_PATH)
 
@@ -26,6 +28,8 @@ def search_with_just_keyword(keyword):
     return search_result    
     
 def search_with_distance(query, top_k=3):
+    if not query:
+        return []
     df = pd.read_csv(STORAGE_FILE_PATH)
     document_text = df['text'].tolist()
     
