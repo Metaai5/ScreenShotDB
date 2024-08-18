@@ -8,17 +8,16 @@ from utils.handle_text import remove_special_characters
 from utils.handle_data import save_image_2, make_dataframe
 from services.summary import make_summary
 from services.tag import tag_document, load_tags
-from services.search import search_with_just_keyword, search_with_distance
+from services.search import search_with_just_keyword, search_with_distance, search_with_tag
 from dependencies.model_factory import ocr_model, base_gpt_model
 import logging
 from config.path import RAW_IMAGE_DIR
 import ast
-import time
 
 # 예제 요약 및 태그 데이터
 Chatbot = "OOO하는 방식도 추천드립니다."
 
-previous_results = []
+previous_results = gr.State([])
 
 def get_text(img):
     ocr_text = ocr_model.get_text_from_image(img)
@@ -30,25 +29,26 @@ def upload(image_paths, progress=gr.Progress()):
     if image_paths is None:
         return [], gr.Radio(choices=fetch_representative_images(), label="태그별 폴더 목록")
     results = []
-    total_steps = 4 * len(image_paths) # 전체 단계의 수
     try:
         for i, cur_file_path in enumerate(progress.tqdm(image_paths)):
             uuid_str, file_path = save_image_2(cur_file_path)
             # 스테이터스바 제거
-            progress(i / len(image_paths) / total_steps, desc=f"Removing status bar")
+            progress((i + 0.25) / len(image_paths), desc=f"Processing {cur_file_path} - Removing status bar")
             processed_image = remove_status_bar(file_path)
 
             # ocr
-            progress((i / len(image_paths)) + 1 / total_steps, desc=f"OCR")
+            progress((i + 0.5) / len(image_paths), desc=f"Processing {cur_file_path} - OCR")
+
             ocr_text = get_text(processed_image)
             print(ocr_text)
             
             # 요약 생성
-            progress((i / len(image_paths)) + 2 / total_steps, desc=f"Summary")
+            progress((i + 0.75) / len(image_paths), desc=f"Processing {cur_file_path} - Summary")
             summary = make_summary(ocr_text)
             
             # 태깅
-            progress((i / len(image_paths)) + 3 / total_steps, desc=f"Tagging")
+            progress((i + 1.0) / len(image_paths), desc=f"Processing {cur_file_path} - Tagging")
+
             tag = tag_document(ocr_text) 
             print('생성 완료 ', tag)
             if isinstance(tag, list) and len(tag) > 1:
@@ -89,13 +89,11 @@ def display_images_and_summary(image_path):
 
 def fetch_images_from_folder(tag_name):
     print("-----------------------", tag_name)
-    results = [search_result['file_path'] for search_result in search_with_just_keyword(tag_name)]
+    results = search_with_tag(tag_name)
     return results
-
 
 def fetch_representative_images():
     folders = [tag for tag in load_tags().keys()]
-    # folders = {tag for tag in load_tags().keys()}
     return folders
 
 
@@ -161,21 +159,21 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
             with gr.Row():
                 search_input = gr.Textbox(label="검색", placeholder="검색할 키워드 및 내용을 입력하세요", scale=10, min_width=600)
                 search_button = gr.Button("검색", scale=2, min_width=200)
-
-            def handle_search(search_query):
-                global previous_results
+                previous_results = gr.State([])
+                
+            def handle_search(search_query, previous_results):
                 keyword_results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
                 distance_results = [search_result['file_path'] for search_result in search_with_distance(search_query)]
                 results = list(set(keyword_results + distance_results))
-                if results == previous_results:
+                if results == previous_results and search_query:
                     return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
                 
                 previous_results = results
                 if results:
-                    return results, "▶검색된 이미지 표시", None, "", "", ""
+                    return results, f'▶검색된 이미지 {len(results)}개 표시', None, "", "", ""
                 else:
                     return [], "▶검색 결과가 없습니다. 다른 키워드로 검색해주세요.", None, "이미지를 찾을 수 없습니다.", "검색된 결과가 없습니다", ""
-        
+            
             with gr.Row():
                 gallery_info = gr.Markdown(value="")
             with gr.Row():
@@ -188,8 +186,10 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
                     s_tab_selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
                     s_tab_chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
 
-                search_button.click(fn=handle_search, inputs=search_input, outputs=[s_tab_search_results, gallery_info, s_tab_selected_image_display, s_tab_selected_summary_display, s_tab_tags_display, s_tab_chatbot_display])
-                s_tab_search_results.select(fn=update_image_and_summary, outputs=[s_tab_selected_image_display, s_tab_selected_summary_display, s_tab_tags_display, s_tab_chatbot_display])
+
+                search_button.click(fn=handle_search, inputs=[search_input, previous_results], outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
+                search_input.submit(fn=handle_search, inputs=[search_input, previous_results], outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
+                search_results.select(fn=update_image_and_summary, outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
 
         image_input.change(fn=upload, inputs=[image_input], outputs=[image_output, folder_list])
 
