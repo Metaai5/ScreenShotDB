@@ -1,7 +1,7 @@
 import os
 
 # 루트 디렉토리
-ROOT_DIR = os.path.dirname(os.path.abspath('./app.py'))
+ROOT_DIR = os.path.dirname('./app.py')
 
 
 # Data 디렉토리

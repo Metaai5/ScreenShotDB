@@ -20,8 +20,7 @@ class OCRModel():
         return word_list
 
 
-    def get_text_from_image(self, origin_img_path, preprocessed_img):
-        img_name = Path(origin_img_path).name
+    def get_text_from_image(self, preprocessed_img):
         ocr_result = self.model.ocr(preprocessed_img, cls=False)[0]
         
         # 텍스트와 좌표를 추출하고 y 좌표로 정렬

@@ -1,13 +1,15 @@
 from langchain.prompts import PromptTemplate
 from sentence_transformers import util
 from models.llm_models import LLMModel
-from dependencies.model_factory import gpt_chat_model, device, embedding_model
+from dependencies.model_factory import device, embedding_model
 import torch
 import json
 from pathlib import Path
 from collections import defaultdict
 import pandas as pd
 from config.path import TAG_FILE_PATH
+from langchain.chat_models import ChatOpenAI
+
 
 tag_file = Path(TAG_FILE_PATH)
 
@@ -34,7 +36,7 @@ def make_models():
                                                                             대분류부터 소분류 순으로 나열하고 구분은 ,로 하세요.'
                                                                             )
     
-    topic_classification_model = LLMModel(gpt_chat_model, None, device, topic_classification_prompt, topic_classification_user_prompt_template)
+    topic_classification_model = LLMModel(ChatOpenAI(model='gpt-4o-mini'), None, device, topic_classification_prompt, topic_classification_user_prompt_template)
 
     return topic_classification_model
 

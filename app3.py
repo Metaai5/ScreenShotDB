@@ -9,10 +9,12 @@ from utils.handle_data import save_image, save_image_2, make_dataframe
 from services.summary import make_summary
 from services.tag import tag_document, load_tags
 from services.search import search_with_just_keyword, search_document
-from dependencies.model_factory import ocr_model, gpt_chat_model
+from dependencies.model_factory import ocr_model, base_gpt_model
 import logging
 from config.path import RAW_IMAGE_DIR
 import ast
+import time
+
 
 
 # 예제 요약 및 태그 데이터
@@ -23,40 +25,62 @@ previous_results = []
 def get_text(img):
     ocr_text = ocr_model.get_text_from_image(img)
     removed_special_chars = remove_special_characters(ocr_text)
-    return gpt_chat_model.strip_noise_from_text(removed_special_chars)
+    return base_gpt_model.strip_noise_from_text(removed_special_chars)
 
-def display_images_and_summary(image_path):
-    # try:
-        img = Image.open(image_path)
-        file_uuid = image_path.split('\\')[-2]
-        if (search_result:=search_with_just_keyword(file_uuid)):
-            summary = search_result[0]['summary']
-            tags = ast.literal_eval(search_result[0]['tags'])
-            if isinstance(tags, list) and len(tags) > 1:
-                categories = ", ".join(tags)
-            else:
-                categories = tags
-            chatbot_message = Chatbot
-        else:
+
+def upload(image_paths, progress=gr.Progress()):
+    results = []
+    total_steps = 4  # 전체 단계의 수
+    try:
+        for i, cur_file_path in enumerate(progress.tqdm(image_paths, desc="Processing Files")):
+            time.sleep(0.25)
+            
             # 스테이터스바 제거
-            processed_image = remove_status_bar(img) 
+            progress(i / len(image_paths) / total_steps, desc=f"Processing {cur_file_path} - Removing status bar")
+            processed_image = remove_status_bar(cur_file_path)
+
             # ocr
+            progress((i / len(image_paths)) + 1 / total_steps, desc=f"Processing {cur_file_path} - OCR")
             ocr_text = get_text(processed_image)
+            print(ocr_text)
+            
+            # 요약 생성
+            progress((i / len(image_paths)) + 2 / total_steps, desc=f"Processing {cur_file_path} - Summary")
             summary = make_summary(ocr_text)
             
+            # 태깅
+            progress((i / len(image_paths)) + 3 / total_steps, desc=f"Processing {cur_file_path} - Tagging")
             tag = tag_document(ocr_text) # TODO: 현재 기존에 있는 tag인 경우 하나 밖에 안 나오게 되어 있는 것으로 확인함
             if isinstance(tag, list) and len(tag) > 1:
                 categories = ", ".join(tag)
             else:
                 categories = tag
             
-            uuid_str, file_path = save_image_2(image_path)
+            uuid_str, file_path = save_image_2(cur_file_path)
             document_data = {'uuid_str':uuid_str, 'text':ocr_text, 'file_path': file_path, 'tags':categories, 'summary' : summary}
             make_dataframe(document_data)
-            save_image_2(image_path)
-
-        chatbot_message = Chatbot
-        return img, summary, categories, chatbot_message
+            
+            # 완료
+            progress((i + 1) / len(image_paths), desc=f"Processing {cur_file_path} - Completed")
+            results.append(cur_file_path)
+            
+    except Exception as e: 
+        logging.error(str(e))
+    finally:
+        return results
+    
+def display_images_and_summary(image_path):
+    # try:
+        img = Image.open(image_path)
+        file_uuid = image_path.split('\\')[-1]
+        print(file_uuid)
+        print(image_path)
+        print(search_with_just_keyword(file_uuid))
+        if (search_result:=search_with_just_keyword(file_uuid)):
+            summary = search_result[0]['summary']
+            categories = search_result[0]['tags']
+            chatbot_message = Chatbot
+            return img, summary, categories, chatbot_message
     # except Exception as e:
     #     logging.error(f"이미지 처리 중 오류 발생: {str(e)}")
     # return None, f"이미지를 처리할 수 없습니다.", "", ""
@@ -108,13 +132,29 @@ def update_image_and_summary(evt: gr.SelectData):
 
     return None, "이미지를 찾을 수 없습니다.", "", ""
 
+
+def reset_db_tab():
+    return None, None
+
+def reset_tab_2():
+    return None, None
+
+
 # 그라디오 인터페이스 생성(테마 적용 및 제목사이즈 수정)
 with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; font-size: 2em !important; margin-top: 5px !important; margin-bottom: 5px !important; font-weight: bold !important; }") as app:
     with gr.Column():
         gr.HTML('<h1 class="title-style">AI 이미지 검색 · 요약 서비스</h1>')
-    with gr.Tab('태그별 검색'):
+    with gr.Tab('DB 업데이트'):
+        image_input = gr.File(label="이미지 업로드", file_count="multiple", scale=1)
+        image_output = gr.Gallery(label="이미지 목록", columns=10, rows=5, height=400, value=None, allow_preview=True, interactive=False)
+        image_input.change(fn=upload, inputs=image_input, outputs=image_output)
+        
+        # app.load(reset_db_tab, inputs=[], outputs=[image_input, image_output])
+    
+    with gr.Tab('태그별 목록'):
         with gr.Row():
             folder_list = gr.Radio(choices=fetch_representative_images(), label="태그별 폴더 목록")
+            
         with gr.Row():
             infolder_images = gr.Gallery(label="이미지 목록", elem_id="infolder_image", columns=10, rows=5, height=400, value=None, allow_preview=False, interactive=False)
         with gr.Row():
@@ -173,5 +213,6 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
 
         search_button.click(fn=handle_search, inputs=search_input, outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
         search_results.select(fn=update_image_and_summary, outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
+
 
 app.launch(share=True)

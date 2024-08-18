@@ -9,9 +9,8 @@ class LLMModel():
         self.tokenizer = tokenizer
         self.device = device
 
-    def strip_noise_from_text(model, text):
-        llm_response = model.invoke(text + ' 이 내용에서, 의미가 없는 문자열을 제거한 뒤, 온전히 그 내용만 돌려줘')
-        return llm_response.content
+    def strip_noise_from_text(self, text):
+        return self.model.invoke(text + ' 이 내용에서, 의미가 없는 문자열을 제거한 뒤, 온전히 그 내용만 돌려줘').content
     
     
     def exec(self, text):
