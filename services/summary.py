@@ -1,5 +1,5 @@
 from langchain.prompts import PromptTemplate
-from services.model import LLMModel,gpt_chat_model, tokenizer, device
+from services.model import LLMModel,gpt_chat_model, device
 
 def make_model():
     summary_prompt = '''

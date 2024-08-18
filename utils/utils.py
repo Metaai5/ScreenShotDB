@@ -7,6 +7,7 @@ from services.summary import make_summary
 from utils.preprocessing_img import remove_status_bar
 from utils.paddle_ocr import get_text_from_image
 import pandas as pd
+from config.path import ORGANIZED_IMAGE_DIR, STORAGE_FILE_PATH
 
 # 이미지 저장
 def save_image(image_path, save_path):
@@ -24,12 +25,12 @@ def make_dataframe(document_data):
         'tags': document_data['tags'],
         'summary': document_data['summary']
     }
-    dataframe_path = 'data/result_texts.csv'
+    
     df = pd.DataFrame(result_texts).T.reset_index()
     df.columns = ['uuid', 'text', 'file_path', 'tags', 'summary']
     df = df[['uuid', 'file_path', 'text', 'tags', 'summary']]
-    if not os.path.exists(dataframe_path):
-        df.to_csv(dataframe_path, index=False)
+    if not os.path.exists(STORAGE_FILE_PATH):
+        df.to_csv(STORAGE_FILE_PATH, index=False)
     else:
         base_df = pd.read_csv(dataframe_path)
         base_df.append(df)
@@ -40,7 +41,7 @@ def load_image(image_paths):
         allowed_formats = {'.jpg', '.jpeg', '.png'}
         image_format = Path(image_path).suffix.lower()
         uuid_str = str(uuid.uuid4()) 
-        save_path = os.path.join('data/organized_images/', f'{uuid_str}{image_format}')
+        save_path = os.path.join(ORGANIZED_IMAGE_DIR, f'{uuid_str}{image_format}')
         if image_format in allowed_formats:
             try:
                 file_path = save_image(image_path, save_path)
