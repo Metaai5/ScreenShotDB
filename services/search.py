@@ -66,4 +66,4 @@ def search_with_distance(query, top_k=3):
                     cur_row['summary'] = row['summary']
                     cur_row['tags'] = row['tags']
                 search_result.append(cur_row)
-        return search_result
+    return search_result
