@@ -8,7 +8,7 @@ from utils.handle_text import remove_special_characters
 from utils.handle_data import save_image_2, make_dataframe
 from services.summary import make_summary
 from services.tag import tag_document, load_tags
-from services.search import search_with_just_keyword
+from services.search import search_with_just_keyword, search_with_distance
 from dependencies.model_factory import ocr_model, base_gpt_model
 import logging
 from config.path import RAW_IMAGE_DIR
@@ -50,7 +50,7 @@ def upload(image_paths, progress=gr.Progress()):
             
             # 태깅
             progress((i / len(image_paths)) + 3 / total_steps, desc=f"Processing {cur_file_path} - Tagging")
-            tag = tag_document(ocr_text) # TODO: 현재 기존에 있는 tag인 경우 하나 밖에 안 나오게 되어 있는 것으로 확인함
+            tag = tag_document(ocr_text) 
             if isinstance(tag, list) and len(tag) > 1:
                 categories = ", ".join(tag)
             else:
@@ -63,6 +63,7 @@ def upload(image_paths, progress=gr.Progress()):
             # 완료
             progress((i + 1) / len(image_paths), desc=f"Processing {cur_file_path} - Completed")
             results.append(cur_file_path)
+            
             
     except Exception as e: 
         logging.error(str(e))
@@ -182,15 +183,18 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
             inputs=infolder_images,
             outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display]
         )
+    
+    
     with gr.Tab('검색'):
         with gr.Row():
             search_input = gr.Textbox(label="검색", placeholder="검색할 키워드 및 내용을 입력하세요", scale=10, min_width=600)
-            search_button = gr.Button("검색", scale=2, min_width=200)
-            gallery_info = gr.Markdown(value="")
+            search_button = gr.Button("검색", scale=3, min_width=200)
 
             def handle_search(search_query):
                 global previous_results
-                results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
+                keyword_results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
+                distance_results = [search_result['file_path'] for search_result in search_with_distance(search_query)]
+                results = list(set(keyword_results + distance_results))
                 if results == previous_results:
                     return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
                 
@@ -201,6 +205,7 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
                     return [], "▶검색 결과가 없습니다. 다른 키워드로 검색해주세요.", None, "이미지를 찾을 수 없습니다.", "검색된 결과가 없습니다", ""
         
         with gr.Row():
+            gallery_info = gr.Markdown(value="")
             search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
 
         with gr.Row():

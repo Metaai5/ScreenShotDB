@@ -2,10 +2,8 @@ import faiss
 import pandas as pd
 from dependencies.model_factory import embedding_model
 from config.path import STORAGE_FILE_PATH
-import logging
 
 def search_with_just_keyword(keyword):
-
     # 전체 로드
     df = pd.read_csv(STORAGE_FILE_PATH)
 
@@ -27,10 +25,10 @@ def search_with_just_keyword(keyword):
         search_result.append(cur_row)
     return search_result    
     
-    
-def search_query(query, top_k=3):
-    df = pd.read_csv('data/result_texts.csv')
+def search_with_distance(query, top_k=3):
+    df = pd.read_csv(STORAGE_FILE_PATH)
     document_text = df['text'].tolist()
+    
     # 문서 임베딩 생성
     document_embeddings = embedding_model.encode(document_text, convert_to_tensor=True)
     
@@ -45,16 +43,23 @@ def search_query(query, top_k=3):
     # 유사도 계산
     D, I = index.search(query_embedding.cpu().numpy(), top_k)
     results = [(df.iloc[i]['uuid'], D[0][idx]) for idx, i in enumerate(I[0])]
-    return results
-
-def show_search_result(results):
-    # 유사도가 낮은 결과들은 보여주지 않음
+    # 유사도 낮은 결과 제외
+    search_result = []
+    df = pd.read_csv(STORAGE_FILE_PATH)
+    
     for result in results:
         uuid, distance = result
         if distance > 500:
-            pass
+            continue
         else:
-            return uuid
-            
-        
-# print(search_query('클라우드 컴퓨팅', 3))
+            filtered_df = df[df['uuid'] == uuid].copy()
+            if not filtered_df.empty:
+                cur_row = {}
+                for _, row in filtered_df.iterrows():
+                    cur_row['uuid'] = row['uuid']
+                    cur_row['file_path'] = row['file_path']
+                    cur_row['text'] = row['text']
+                    cur_row['summary'] = row['summary']
+                    cur_row['tags'] = row['tags']
+                search_result.append(cur_row)
+        return search_result
