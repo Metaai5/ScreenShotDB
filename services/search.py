@@ -26,8 +26,9 @@ def search_with_just_keyword(keyword):
             cur_row['tags'] = row['tags']
         search_result.append(cur_row)
     return search_result    
-    
-def search_with_distance(query, top_k=3):
+
+# TODO:유사도 검색 시 어울리지 않는 거 뜨는 문제 발생
+def search_with_distance(query, top_k=30):
     if not query:
         return []
     df = pd.read_csv(STORAGE_FILE_PATH)
@@ -53,17 +54,28 @@ def search_with_distance(query, top_k=3):
     
     for result in results:
         uuid, distance = result
-        if distance > 500:
+        print(distance)
+        if distance > 450:
             continue
         else:
             filtered_df = df[df['uuid'] == uuid].copy()
             if not filtered_df.empty:
-                cur_row = {}
                 for _, row in filtered_df.iterrows():
+                    cur_row = {}
                     cur_row['uuid'] = row['uuid']
                     cur_row['file_path'] = row['file_path']
                     cur_row['text'] = row['text']
                     cur_row['summary'] = row['summary']
                     cur_row['tags'] = row['tags']
                 search_result.append(cur_row)
+    
     return search_result
+
+def search_with_tag(tag):
+    if not tag:
+        return []
+    # 전체 로드
+    df = pd.read_csv(STORAGE_FILE_PATH)
+    filtered_df = df[df['tags'].str.contains(tag, na=False)].copy()
+    results = filtered_df['file_path'].tolist()
+    return results
