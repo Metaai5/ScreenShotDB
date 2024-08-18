@@ -32,3 +32,16 @@ summary_user_prompt_template = PromptTemplate.from_template('''
                                                                 ''')
 summary_model = LLMModel(ChatOpenAI(model='gpt-4o-mini'), None, device, summary_prompt, summary_user_prompt_template)
 base_gpt_model = LLMModel(ChatOpenAI(model='gpt-4o-mini'), None, device, None, None)
+topic_classification_prompt = '''
+                                    당신은 세계에서 제일 유능한 토픽 분류 전문가입니다.
+                                    답변에는 카테고리만 제시합니다.
+                                '''
+topic_classification_user_prompt_template = PromptTemplate.from_template('''
+                                                                         {text}라는 내용에 대해 카테고리로 분류하세요. 
+                                                                            카테고리는 최대 세개, 각 카테고리는 유일합니다.
+                                                                            대분류부터 소분류 순으로 나열하고 구분은 ,로 하세요.
+                                                                            답변은 카테고리만 제시하세요.
+                                                                            '''
+                                                                            )
+    
+topic_classification_model = LLMModel(ChatOpenAI(model='gpt-4o-mini'), None, device, topic_classification_prompt, topic_classification_user_prompt_template)
