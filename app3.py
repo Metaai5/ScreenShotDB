@@ -30,26 +30,25 @@ def upload(image_paths, progress=gr.Progress()):
     if image_paths is None:
         return [], gr.Radio(choices=fetch_representative_images(), label="태그별 폴더 목록")
     results = []
-    total_steps = 4  # 전체 단계의 수
+    total_steps = 4 * len(image_paths) # 전체 단계의 수
     try:
         for i, cur_file_path in enumerate(progress.tqdm(image_paths)):
-            time.sleep(0.25)
             uuid_str, file_path = save_image_2(cur_file_path)
             # 스테이터스바 제거
-            progress(i / len(image_paths) / total_steps, desc=f"Processing {cur_file_path} - Removing status bar")
+            progress(i / len(image_paths) / total_steps, desc=f"Removing status bar")
             processed_image = remove_status_bar(file_path)
 
             # ocr
-            progress((i / len(image_paths)) + 1 / total_steps, desc=f"Processing {cur_file_path} - OCR")
+            progress((i / len(image_paths)) + 1 / total_steps, desc=f"OCR")
             ocr_text = get_text(processed_image)
             print(ocr_text)
             
             # 요약 생성
-            progress((i / len(image_paths)) + 2 / total_steps, desc=f"Processing {cur_file_path} - Summary")
+            progress((i / len(image_paths)) + 2 / total_steps, desc=f"Summary")
             summary = make_summary(ocr_text)
             
             # 태깅
-            progress((i / len(image_paths)) + 3 / total_steps, desc=f"Processing {cur_file_path} - Tagging")
+            progress((i / len(image_paths)) + 3 / total_steps, desc=f"Tagging")
             tag = tag_document(ocr_text) 
             print('생성 완료 ', tag)
             if isinstance(tag, list) and len(tag) > 1:
@@ -182,17 +181,17 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
             with gr.Row():
                 gallery_info = gr.Markdown(value="")
             with gr.Row():
-                search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
+                s_tab_search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
             with gr.Row():
                 with gr.Column(scale=1):
-                    selected_image_display = gr.Image(label="이미지", width=480, height=650)
+                    s_tab_selected_image_display = gr.Image(label="이미지", width=480, height=650)
                 with gr.Column(scale=2):
-                    tags_display = gr.Textbox(label="태그", interactive=False)
-                    selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
-                    chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
+                    s_tab_tags_display = gr.Textbox(label="태그", interactive=False)
+                    s_tab_selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
+                    s_tab_chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
 
-                search_button.click(fn=handle_search, inputs=search_input, outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
-                search_results.select(fn=update_image_and_summary, outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
+                search_button.click(fn=handle_search, inputs=search_input, outputs=[s_tab_search_results, gallery_info, s_tab_selected_image_display, s_tab_selected_summary_display, s_tab_tags_display, s_tab_chatbot_display])
+                s_tab_search_results.select(fn=update_image_and_summary, outputs=[s_tab_selected_image_display, s_tab_selected_summary_display, s_tab_tags_display, s_tab_chatbot_display])
 
         image_input.change(fn=upload, inputs=[image_input], outputs=[image_output, folder_list])
 
