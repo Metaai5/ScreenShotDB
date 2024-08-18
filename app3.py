@@ -30,26 +30,25 @@ def upload(image_paths, progress=gr.Progress()):
     if image_paths is None:
         return [], gr.Radio(choices=fetch_representative_images(), label="태그별 폴더 목록")
     results = []
-    total_steps = 4  # 전체 단계의 수
+    total_steps = 4 * len(image_paths) # 전체 단계의 수
     try:
         for i, cur_file_path in enumerate(progress.tqdm(image_paths)):
-            time.sleep(0.25)
             uuid_str, file_path = save_image_2(cur_file_path)
             # 스테이터스바 제거
-            progress(i / len(image_paths) / total_steps, desc=f"Processing {cur_file_path} - Removing status bar")
+            progress(i / len(image_paths) / total_steps, desc=f"Removing status bar")
             processed_image = remove_status_bar(file_path)
 
             # ocr
-            progress((i / len(image_paths)) + 1 / total_steps, desc=f"Processing {cur_file_path} - OCR")
+            progress((i / len(image_paths)) + 1 / total_steps, desc=f"OCR")
             ocr_text = get_text(processed_image)
             print(ocr_text)
             
             # 요약 생성
-            progress((i / len(image_paths)) + 2 / total_steps, desc=f"Processing {cur_file_path} - Summary")
+            progress((i / len(image_paths)) + 2 / total_steps, desc=f"Summary")
             summary = make_summary(ocr_text)
             
             # 태깅
-            progress((i / len(image_paths)) + 3 / total_steps, desc=f"Processing {cur_file_path} - Tagging")
+            progress((i / len(image_paths)) + 3 / total_steps, desc=f"Tagging")
             tag = tag_document(ocr_text) 
             print('생성 완료 ', tag)
             if isinstance(tag, list) and len(tag) > 1:
