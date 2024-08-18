@@ -38,6 +38,7 @@ def upload(image_paths, progress=gr.Progress()):
 
             # ocr
             progress((i + 0.5) / len(image_paths), desc=f"Processing {cur_file_path} - OCR")
+
             ocr_text = get_text(processed_image)
             print(ocr_text)
             
@@ -47,6 +48,7 @@ def upload(image_paths, progress=gr.Progress()):
             
             # 태깅
             progress((i + 1.0) / len(image_paths), desc=f"Processing {cur_file_path} - Tagging")
+
             tag = tag_document(ocr_text) 
             print('생성 완료 ', tag)
             if isinstance(tag, list) and len(tag) > 1:
@@ -177,14 +179,15 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
             with gr.Row():
                 gallery_info = gr.Markdown(value="")
             with gr.Row():
-                search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
+                s_tab_search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
             with gr.Row():
                 with gr.Column(scale=1):
-                    selected_image_display = gr.Image(label="이미지", width=480, height=650)
+                    s_tab_selected_image_display = gr.Image(label="이미지", width=480, height=650)
                 with gr.Column(scale=2):
-                    tags_display = gr.Textbox(label="태그", interactive=False)
-                    selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
-                    chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
+                    s_tab_tags_display = gr.Textbox(label="태그", interactive=False)
+                    s_tab_selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
+                    s_tab_chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
+
 
                 search_button.click(fn=handle_search, inputs=[search_input, previous_results], outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
                 search_input.submit(fn=handle_search, inputs=[search_input, previous_results], outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
