@@ -9,6 +9,7 @@ from collections import defaultdict
 import pandas as pd
 from config.path import TAG_FILE_PATH
 from langchain.chat_models import ChatOpenAI
+import logging
 
 
 tag_file = Path(TAG_FILE_PATH)
@@ -43,16 +44,20 @@ def make_models():
 topic_classification_model = make_models()
 
 def generate_new_tag(text):
+    print('기존 태그 ', tags)
     new_tags = []
     classification = topic_classification_model.exec(text)
     splitted_tags = classification.split(',')
 
+    print(classification)
+    print(splitted_tags)
     for cur_tag in splitted_tags:
         cur_tag = cur_tag.strip()  # 공백 제거
         if cur_tag not in tags:  # 이미 존재하지 않는 태그라면 추가
             tags[cur_tag] = {'embedding':None}
             new_tags.append(cur_tag)
-            
+    
+    print('new_tags', new_tags)
     # print("Classification:", classification)
     
     return new_tags
@@ -77,6 +82,8 @@ def tag_document(text):
             best_similarity = similarity
             best_tag = tag_name
     
+    print(tags.items())
+    print(best_tag, best_similarity)
     # 임계값을 설정하여 문서가 기존 태그에 들어갈 수 있는지 판단 (유사도 0.7 이상)
     if best_similarity > 0.7:
         print(f"문서를 '{best_tag}' 태그에 추가합니다. (유사도: {best_similarity})")
@@ -84,6 +91,7 @@ def tag_document(text):
     else:
         # 적절한 태그가 없으면 새로운 태그 생성
         new_tag_names = generate_new_tag(text)
+        logging.debug(new_tag_names)
         for new_tag_name in new_tag_names:
             tag_embedding = embedding_model.encode(new_tag_name, convert_to_tensor=True)
             
