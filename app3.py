@@ -5,10 +5,10 @@ from PIL import Image
 from models.ocr_models import OCRModel
 from utils.preprocessing_img import remove_status_bar
 from utils.handle_text import remove_special_characters
-from utils.handle_data import save_image, save_image_2, make_dataframe
+from utils.handle_data import save_image_2, make_dataframe
 from services.summary import make_summary
 from services.tag import tag_document, load_tags
-from services.search import search_with_just_keyword, search_document
+from services.search import search_with_just_keyword
 from dependencies.model_factory import ocr_model, base_gpt_model
 import logging
 from config.path import RAW_IMAGE_DIR

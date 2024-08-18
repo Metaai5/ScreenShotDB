@@ -1,6 +1,5 @@
 import faiss
 import pandas as pd
-from model import embedding_model
 from dependencies.model_factory import embedding_model
 from config.path import STORAGE_FILE_PATH
 import logging
@@ -58,4 +57,4 @@ def show_search_result(results):
             return uuid
             
         
-print(search_query('클라우드 컴퓨팅', 3))
+# print(search_query('클라우드 컴퓨팅', 3))
