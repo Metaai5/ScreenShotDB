@@ -34,7 +34,6 @@ def make_dataframe(document_data):
     else:
         df.to_csv(STORAGE_FILE_PATH, mode='a', header=False, index=False)
 
-       
 # Gradio - pipe 역할
 def load_image(image_paths):
     for image_path in image_paths:
@@ -48,7 +47,7 @@ def load_image(image_paths):
                 text = ' '.join(ocr_model.make_wordlist(file_path))
                 tags = tag_document(text)
                 summary = make_summary(text)
-                document_data = {'uuid_str':uuid_str, 'text':text, 'file_path': image_path, 'tags':tags, 'summary' : summary}
+                document_data = {'uuid_str':uuid_str, 'text':text, 'file_path': save_path, 'tags':tags, 'summary' : summary}
                 make_dataframe(document_data)
             except Exception as e:
                 return f'이미지 파일 .jpg, .jpeg, .png만 업로드 가능합니다.'
