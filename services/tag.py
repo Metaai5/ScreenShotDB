@@ -9,6 +9,7 @@ from collections import defaultdict
 import pandas as pd
 from config.path import TAG_FILE_PATH
 from langchain.chat_models import ChatOpenAI
+import logging
 
 
 tag_file = Path(TAG_FILE_PATH)
