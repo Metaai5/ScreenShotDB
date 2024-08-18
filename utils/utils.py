@@ -4,7 +4,8 @@ from pathlib import Path
 import os
 from services.tag import tag_document 
 from services.summary import make_summary
-from utils.paddle_ocr import make_wordlist
+from utils.preprocessing_img import remove_status_bar
+from utils.paddle_ocr import get_text_from_image
 import pandas as pd
 
 # 이미지 저장
@@ -31,8 +32,7 @@ def make_dataframe(document_data):
         df.to_csv(dataframe_path, index=False)
     else:
         base_df = pd.read_csv(dataframe_path)
-        base_df = pd.concat([base_df, df], ignore_index=True)
-        base_df.to_csv(dataframe_path, index=False)
+        base_df.append(df)
             
 # Gradio - pipe 역할
 def load_image(image_paths):
@@ -44,7 +44,8 @@ def load_image(image_paths):
         if image_format in allowed_formats:
             try:
                 file_path = save_image(image_path, save_path)
-                text = ' '.join(make_wordlist(file_path))
+                preprocessed_img = remove_status_bar(file_path)
+                text = get_text_from_image(file_path, preprocessed_img)
                 tags = tag_document(text)
                 summary = make_summary(text)
                 document_data = {'uuid_str':uuid_str, 'text':text, 'file_path': image_path, 'tags':tags, 'summary' : summary}
