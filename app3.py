@@ -8,7 +8,7 @@ from utils.handle_text import remove_special_characters
 from utils.handle_data import save_image_2, make_dataframe
 from services.summary import make_summary
 from services.tag import tag_document, load_tags
-from services.search import search_with_just_keyword
+from services.search import search_with_just_keyword, search_with_distance
 from dependencies.model_factory import ocr_model, base_gpt_model
 import logging
 from config.path import RAW_IMAGE_DIR
@@ -52,8 +52,7 @@ def upload(image_paths, progress=gr.Progress()):
             
             # 태깅
             progress((i / len(image_paths)) + 3 / total_steps, desc=f"Processing {cur_file_path} - Tagging")
-            tag = tag_document(ocr_text) # TODO: 현재 기존에 있는 tag인 경우 하나 밖에 안 나오게 되어 있는 것으로 확인함
-            
+            tag = tag_document(ocr_text) 
             print('생성 완료 ', tag)
             if isinstance(tag, list) and len(tag) > 1:
                 categories = ", ".join(tag)
@@ -68,6 +67,8 @@ def upload(image_paths, progress=gr.Progress()):
             # 완료
             progress((i + 1) / len(image_paths), desc=f"Processing {cur_file_path} - Completed")
             results.append(cur_file_path)
+            
+            
     except Exception as e: 
         logging.error(str(e))
     finally:
