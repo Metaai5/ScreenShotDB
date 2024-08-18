@@ -168,28 +168,31 @@ with gr.Blocks(theme="soft",css=".title-style { text-align: center !important; f
                 search_button = gr.Button("검색", scale=2, min_width=200)
                 gallery_info = gr.Markdown(value="")
 
-                def handle_search(search_query):
-                    global previous_results
-                    results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
-                    if results == previous_results:
-                        return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
-                    
-                    previous_results = results
-                    if results:
-                        return results, "▶검색된 이미지 표시", None, "", "", ""
-                    else:
-                        return [], "▶검색 결과가 없습니다. 다른 키워드로 검색해주세요.", None, "이미지를 찾을 수 없습니다.", "검색된 결과가 없습니다", ""
-            
-            with gr.Row():
-                search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
-
-            with gr.Row():
-                with gr.Column(scale=1):
-                    selected_image_display = gr.Image(label="이미지", width=480, height=650)
-                with gr.Column(scale=2):
-                    tags_display = gr.Textbox(label="태그", interactive=False)
-                    selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
-                    chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
+            def handle_search(search_query):
+                global previous_results
+                keyword_results = [search_result['file_path'] for search_result in search_with_just_keyword(search_query)]
+                distance_results = [search_result['file_path'] for search_result in search_with_distance(search_query)]
+                results = list(set(keyword_results + distance_results))
+                if results == previous_results:
+                    return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
+                
+                previous_results = results
+                if results:
+                    return results, "▶검색된 이미지 표시", None, "", "", ""
+                else:
+                    return [], "▶검색 결과가 없습니다. 다른 키워드로 검색해주세요.", None, "이미지를 찾을 수 없습니다.", "검색된 결과가 없습니다", ""
+        
+        with gr.Row():
+            gallery_info = gr.Markdown(value="")
+        with gr.Row():
+            search_results = gr.Gallery(label="검색 결과 이미지", elem_id="gallery", columns=5, height=300, allow_preview=False, interactive=False)
+        with gr.Row():
+            with gr.Column(scale=1):
+                selected_image_display = gr.Image(label="이미지", width=480, height=650)
+            with gr.Column(scale=2):
+                tags_display = gr.Textbox(label="태그", interactive=False)
+                selected_summary_display = gr.Textbox(label="요약", interactive=False, lines=10)
+                chatbot_display = gr.Textbox(label="Chatbot", interactive=False, lines=10)
 
             search_button.click(fn=handle_search, inputs=search_input, outputs=[search_results, gallery_info, selected_image_display, selected_summary_display, tags_display, chatbot_display])
             search_results.select(fn=update_image_and_summary, outputs=[selected_image_display, selected_summary_display, tags_display, chatbot_display])
