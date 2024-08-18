@@ -5,7 +5,7 @@ from config.path import LOG_DIR
 
 # 시간별로 로그 파일을 분류하는 핸들러 설정 (1시간마다 새 파일 생성)
 time_rotating_handler = TimedRotatingFileHandler(
-    filename=os.path.join(LOG_DIR, 'application_'),
+    filename=os.path.join(LOG_DIR, 'application.log'),
     when='H',
     interval=1, # 1시간 간격, 매 시간마다 롤오버
     backupCount=24,  # 최대 24개의 로그 파일 보관
@@ -22,7 +22,7 @@ time_rotating_handler.suffix = "%Y-%m-%d_%H-%M-%S.log"
 
 # 에러 이상의 로그만 기록하는 핸들러 설정
 error_handler = TimedRotatingFileHandler(
-    filename=os.path.join(LOG_DIR, 'error_'),
+    filename=os.path.join(LOG_DIR, 'error.log'),
     when='H',
     interval=1,
     backupCount=24,

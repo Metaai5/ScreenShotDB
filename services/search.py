@@ -1,8 +1,33 @@
 import faiss
 import pandas as pd
-# from services.model import embedding_model
-from model import embedding_model
+from dependencies.model_factory import embedding_model
+from config.path import STORAGE_FILE_PATH
+import logging
 
+def search_with_just_keyword(keyword):
+
+    # 전체 로드
+    df = pd.read_csv(STORAGE_FILE_PATH)
+
+    # 1. 키워드로 필터링
+    # text, summary, tags 컬럼에서 키워드가 포함된 문서를 필터링
+    filtered_df = df[df['file_path'].str.contains(keyword, na=False) |
+                    df['text'].str.contains(keyword, na=False) |
+                    df['summary'].str.contains(keyword, na=False) |
+                    df['tags'].str.contains(keyword, na=False)].copy()
+    search_result = []
+    # 필터링된 결과 출력
+    if not filtered_df.empty:
+        cur_row = {}
+        for _, row in filtered_df.iterrows():
+            cur_row['file_path'] = row['file_path']
+            cur_row['text'] = row['file_path']
+            cur_row['summary'] = row['summary']
+            cur_row['tags'] = row['tags']
+        search_result.append(cur_row)
+    return search_result    
+    
+    
 def search_query(query, top_k=3):
     df = pd.read_csv('data/result_texts.csv')
     document_text = df['text'].tolist()
@@ -32,4 +57,4 @@ def show_search_result(results):
             return uuid
             
         
-print(search_query('클라우드 컴퓨팅', 3))
+# print(search_query('클라우드 컴퓨팅', 3))

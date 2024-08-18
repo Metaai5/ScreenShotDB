@@ -1,4 +1,4 @@
-from paddle_ocr import remove_special_characters, get_text_from_image
+from utils.handle_text import remove_special_characters, get_text_from_image
 from preprocessing_img import remove_status_bar
 import numpy as np
 from dotenv import load_dotenv

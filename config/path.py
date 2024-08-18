@@ -1,7 +1,7 @@
 import os
 
 # 루트 디렉토리
-ROOT_DIR = os.path.dirname(os.path.abspath('./app.py'))
+ROOT_DIR = os.path.dirname('./app.py')
 
 
 # Data 디렉토리
@@ -31,9 +31,9 @@ LOG_DIR = os.path.join(ROOT_DIR, 'logs')
 
 
 # 디렉토리 생성
-os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(IMAGE_DIR, exist_ok=True)
-os.makedirs(RAW_IMAGE_DIR, exist_ok=True)
-os.makedirs(ORGANIZED_IMAGE_DIR, exist_ok=True)
-os.makedirs(STORAGE_DIR, exist_ok=True)
-os.makedirs(LOG_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, mode=0o777, exist_ok=True)
+os.makedirs(IMAGE_DIR, mode=0o777, exist_ok=True)
+os.makedirs(RAW_IMAGE_DIR, mode=0o777, exist_ok=True)
+os.makedirs(ORGANIZED_IMAGE_DIR, mode=0o777, exist_ok=True)
+os.makedirs(STORAGE_DIR, mode=0o777, exist_ok=True)
+os.makedirs(LOG_DIR, mode=0o777, exist_ok=True)
